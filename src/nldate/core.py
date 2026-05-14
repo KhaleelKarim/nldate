@@ -28,6 +28,49 @@ WEEKDAYS = {
     "sunday": 6,
 }
 
+ORDINALS = {
+    "first": 1,
+    "second": 2,
+    "third": 3,
+    "fourth": 4,
+    "fifth": 5,
+    "sixth": 6,
+    "seventh": 7,
+    "eighth": 8,
+    "ninth": 9,
+    "tenth": 10,
+    "eleventh": 11,
+    "twelfth": 12,
+    "thirteenth": 13,
+    "fourteenth": 14,
+    "fifteenth": 15,
+    "sixteenth": 16,
+    "seventeenth": 17,
+    "eighteenth": 18,
+    "nineteenth": 19,
+    "twentieth": 20,
+    "twenty-first": 21,
+    "twenty-second": 22,
+    "twenty-third": 23,
+    "twenty-fourth": 24,
+    "twenty-fifth": 25,
+    "twenty-sixth": 26,
+    "twenty-seventh": 27,
+    "twenty-eighth": 28,
+    "twenty-ninth": 29,
+    "thirtieth": 30,
+    "thirty-first": 31,
+}
+
+
+def _parse_day(s: str) -> int:
+    m = re.fullmatch(r"(\d+)(?:st|nd|rd|th)?", s.strip())
+    if m:
+        return int(m.group(1))
+    if s in ORDINALS:
+        return ORDINALS[s]
+    raise ValueError(f"Cannot parse day: {s!r}")
+
 
 def _add_months(d: date, n: int) -> date:
     month = d.month - 1 + n
@@ -64,13 +107,13 @@ def _parse_delta_parts(s: str) -> list[tuple[int, str]]:
 
 
 def _parse_explicit_date(s: str) -> date:
-    m = re.fullmatch(r"(\w+)\s+(\d+)(?:st|nd|rd|th)?,?\s+(\d{4})", s.strip())
-    if not m:
-        raise ValueError(f"Cannot parse explicit date: {s!r}")
-    month_name = m.group(1)
-    if month_name not in MONTHS:
-        raise ValueError(f"Unknown month: {month_name!r}")
-    return date(int(m.group(3)), MONTHS[month_name], int(m.group(2)))
+    # "Month [ordinal], Year" — ordinal may be numeric (1st) or word (first, twenty-third)
+    m = re.fullmatch(r"(\w+)\s+([\w-]+),?\s+(\d{4})", s.strip())
+    if m:
+        month_name = m.group(1)
+        if month_name in MONTHS:
+            return date(int(m.group(3)), MONTHS[month_name], _parse_day(m.group(2)))
+    raise ValueError(f"Cannot parse explicit date: {s!r}")
 
 
 def _resolve_anchor(s: str, today: date) -> date:
@@ -131,6 +174,28 @@ def parse(s: str, today: date | None = None) -> date:
         parts = _parse_delta_parts(delta_str)
         sign = 1 if direction == "after" else -1
         return _apply_delta(anchor, parts, sign)
+
+    # "the [ordinal] of Month[,] Year"
+    m = re.fullmatch(r"the\s+([\w-]+)\s+of\s+(\w+),?\s+(\d{4})", t)
+    if m:
+        month_name = m.group(2)
+        if month_name not in MONTHS:
+            raise ValueError(f"Unknown month: {month_name!r}")
+        return date(int(m.group(3)), MONTHS[month_name], _parse_day(m.group(1)))
+
+    # "Year[,] the [ordinal] of Month"
+    m = re.fullmatch(r"(\d{4}),?\s+the\s+([\w-]+)\s+of\s+(\w+)", t)
+    if m:
+        month_name = m.group(3)
+        if month_name not in MONTHS:
+            raise ValueError(f"Unknown month: {month_name!r}")
+        return date(int(m.group(1)), MONTHS[month_name], _parse_day(m.group(2)))
+
+    # standalone "Month [ordinal], Year"
+    try:
+        return _parse_explicit_date(t)
+    except ValueError:
+        pass
 
     # YYYY[-/]MM[-/]DD  (ISO 8601 and its slash variant)
     m = re.fullmatch(r"(\d{4})[-/](\d{1,2})[-/](\d{1,2})", t)

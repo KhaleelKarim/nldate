@@ -233,3 +233,56 @@ def test_numeric_us_dash():
 
 def test_numeric_us_dash_no_leading_zeros():
     assert parse("1-5-2025") == date(2025, 1, 5)
+
+
+# --- named dates: standalone "Month ordinal, Year" ---
+
+
+def test_standalone_month_numeric_ordinal_year():
+    assert parse("December 1st, 2005") == date(2005, 12, 1)
+
+
+def test_standalone_month_word_ordinal_year():
+    assert parse("December first, 2005") == date(2005, 12, 1)
+
+
+def test_standalone_month_word_ordinal_year_mid():
+    assert parse("March fifteenth, 2024") == date(2024, 3, 15)
+
+
+def test_standalone_month_word_ordinal_year_high():
+    assert parse("January thirty-first, 2023") == date(2023, 1, 31)
+
+
+# --- named dates: "the ordinal of Month, Year" ---
+
+
+def test_the_numeric_ordinal_of_month_year():
+    assert parse("the 1st of December, 2005") == date(2005, 12, 1)
+
+
+def test_the_word_ordinal_of_month_year():
+    assert parse("the first of December, 2005") == date(2005, 12, 1)
+
+
+def test_the_word_ordinal_of_month_year_mid():
+    assert parse("the fifteenth of March, 2024") == date(2024, 3, 15)
+
+
+def test_the_numeric_ordinal_of_month_year_no_comma():
+    assert parse("the 20th of November 2022") == date(2022, 11, 20)
+
+
+# --- named dates: "Year, the ordinal of Month" ---
+
+
+def test_year_the_word_ordinal_of_month():
+    assert parse("2005, the first of December") == date(2005, 12, 1)
+
+
+def test_year_the_numeric_ordinal_of_month():
+    assert parse("2024, the 15th of March") == date(2024, 3, 15)
+
+
+def test_year_the_word_ordinal_of_month_high():
+    assert parse("2023, the thirty-first of January") == date(2023, 1, 31)
