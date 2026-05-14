@@ -5,6 +5,7 @@ from nldate.core import parse
 
 # --- "N units before/after <explicit date>" ---
 
+
 def test_5_days_before_december_1():
     assert parse("5 days before December 1st, 2025") == date(2025, 11, 26)
 
@@ -28,21 +29,29 @@ def test_2_months_before_october_31():
 # same expressions with an explicit today — result must be unaffected since the
 # reference date is absolute, not relative to today
 
+
 def test_5_days_before_december_1_with_today():
-    assert parse("5 days before December 1st, 2025", today=date(2024, 1, 1)) == date(2025, 11, 26)
+    assert parse("5 days before December 1st, 2025", today=date(2024, 1, 1)) == date(
+        2025, 11, 26
+    )
 
 
 def test_10_days_after_new_years_with_today():
-    assert parse("10 days after January 1st, 2025", today=date(2023, 6, 15)) == date(2025, 1, 11)
+    assert parse("10 days after January 1st, 2025", today=date(2023, 6, 15)) == date(
+        2025, 1, 11
+    )
 
 
 def test_2_months_before_october_31_with_today():
-    assert parse("2 months before October 31st, 2025", today=date(2026, 3, 1)) == date(2025, 8, 31)
+    assert parse("2 months before October 31st, 2025", today=date(2026, 3, 1)) == date(
+        2025, 8, 31
+    )
 
 
 # --- "next / last <weekday>" ---
 
 # today=Wednesday May 13 2026 → next Monday is May 18, last Friday is May 8
+
 
 def test_next_monday_with_today():
     assert parse("next Monday", today=date(2026, 5, 13)) == date(2026, 5, 18)
@@ -54,6 +63,7 @@ def test_last_friday_with_today():
 
 # without today — expected value is computed relative to date.today() so the
 # test stays correct regardless of when it runs
+
 
 def test_next_thursday_no_today():
     today = date.today()
@@ -72,6 +82,7 @@ def test_last_tuesday_no_today():
 
 
 # --- "N units and M units before/after <explicit date>" ---
+
 
 def test_1_year_and_2_months_after_july_4():
     # July 4 2024 + 1 year + 2 months = September 4, 2025
@@ -98,30 +109,40 @@ def test_1_year_and_3_months_before_december_25():
 # today=Wednesday May 13 2026
 # yesterday=May 12, tomorrow=May 14
 
+
 def test_single_delta_after_yesterday_with_today():
     assert parse("6 days after yesterday", today=date(2026, 5, 13)) == date(2026, 5, 18)
 
 
 def test_single_delta_before_tomorrow_with_today():
-    assert parse("3 weeks before tomorrow", today=date(2026, 5, 13)) == date(2026, 4, 23)
+    assert parse("3 weeks before tomorrow", today=date(2026, 5, 13)) == date(
+        2026, 4, 23
+    )
 
 
 def test_combined_delta_after_yesterday_with_today():
     # yesterday = May 12 2026, + 1 year + 2 months = July 12, 2027
-    assert parse("1 year and 2 months after yesterday", today=date(2026, 5, 13)) == date(2027, 7, 12)
+    assert parse(
+        "1 year and 2 months after yesterday", today=date(2026, 5, 13)
+    ) == date(2027, 7, 12)
 
 
 def test_combined_delta_before_tomorrow_with_today():
     # tomorrow = May 14 2026, - 3 days - 1 week (10 days) = May 4, 2026
-    assert parse("3 days and 1 week before tomorrow", today=date(2026, 5, 13)) == date(2026, 5, 4)
+    assert parse("3 days and 1 week before tomorrow", today=date(2026, 5, 13)) == date(
+        2026, 5, 4
+    )
 
 
 def test_combined_delta_after_today_with_today():
     # May 13 2026 + 2 months + 10 days = July 23, 2026
-    assert parse("2 months and 10 days after today", today=date(2026, 5, 13)) == date(2026, 7, 23)
+    assert parse("2 months and 10 days after today", today=date(2026, 5, 13)) == date(
+        2026, 7, 23
+    )
 
 
 # without today — anchor resolves against date.today() at runtime
+
 
 def test_single_delta_after_today_no_today():
     assert parse("5 days after today") == date.today() + timedelta(days=5)
@@ -132,6 +153,7 @@ def test_single_delta_before_yesterday_no_today():
 
 
 # --- "yesterday" / "tomorrow" as the entire expression ---
+
 
 def test_yesterday_with_today():
     assert parse("yesterday", today=date(2026, 5, 13)) == date(2026, 5, 12)
@@ -151,6 +173,7 @@ def test_tomorrow_no_today():
 
 # --- mixed capitalisation ---
 
+
 def test_mixed_caps_days_before_explicit_date():
     assert parse("5 DAYS beFORE december 1ST, 2025") == date(2025, 11, 26)
 
@@ -164,4 +187,6 @@ def test_mixed_caps_combined_delta_after_explicit_date():
 
 
 def test_mixed_caps_combined_delta_after_yesterday_with_today():
-    assert parse("1 YEAR and 2 months After Yesterday", today=date(2026, 5, 13)) == date(2027, 7, 12)
+    assert parse(
+        "1 YEAR and 2 months After Yesterday", today=date(2026, 5, 13)
+    ) == date(2027, 7, 12)
