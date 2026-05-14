@@ -329,3 +329,184 @@ def test_abbrev_the_ordinal_of_abbrev_month():
 
 def test_abbrev_in_delta_expression():
     assert parse("5 days before Dec 1st, 2025") == date(2025, 11, 26)
+
+
+# --- abbreviated months with trailing period (Dec., Apr., etc.) ---
+
+
+def test_abbrev_period_basic():
+    assert parse("Dec. 1, 2025") == date(2025, 12, 1)
+
+
+def test_abbrev_period_ordinal():
+    assert parse("Apr. 15, 2024") == date(2024, 4, 15)
+
+
+def test_abbrev_period_word_ordinal():
+    assert parse("Jan. first, 2023") == date(2023, 1, 1)
+
+
+def test_abbrev_period_the_of():
+    assert parse("the 5th of Oct., 2025") == date(2025, 10, 5)
+
+
+# --- N units ago / from now / in N units ---
+
+
+def test_n_days_ago():
+    assert parse("3 days ago", today=date(2026, 5, 13)) == date(2026, 5, 10)
+
+
+def test_n_weeks_from_now():
+    assert parse("2 weeks from now", today=date(2026, 5, 13)) == date(2026, 5, 27)
+
+
+def test_in_n_days():
+    assert parse("in 5 days", today=date(2026, 5, 13)) == date(2026, 5, 18)
+
+
+def test_n_months_ago():
+    assert parse("1 month ago", today=date(2026, 5, 13)) == date(2026, 4, 13)
+
+
+# --- word numbers in deltas ---
+
+
+def test_word_number_weeks_from_now():
+    assert parse("two weeks from now", today=date(2026, 5, 13)) == date(2026, 5, 27)
+
+
+def test_word_number_a_week_ago():
+    assert parse("a week ago", today=date(2026, 5, 13)) == date(2026, 5, 6)
+
+
+def test_word_number_days_ago():
+    assert parse("three days ago", today=date(2026, 5, 13)) == date(2026, 5, 10)
+
+
+def test_word_number_a_month_from_today():
+    assert parse("a month from today", today=date(2026, 5, 13)) == date(2026, 6, 13)
+
+
+# --- this <weekday> ---
+
+
+def test_this_weekday_past():
+    # today=Wed May 13 → this Monday = May 11 (same ISO week, already passed)
+    assert parse("this Monday", today=date(2026, 5, 13)) == date(2026, 5, 11)
+
+
+def test_this_weekday_future():
+    # today=Wed May 13 → this Friday = May 15 (same ISO week, upcoming)
+    assert parse("this Friday", today=date(2026, 5, 13)) == date(2026, 5, 15)
+
+
+# --- month + year only (day defaults to 1st) ---
+
+
+def test_month_year_only_full():
+    assert parse("December 2025") == date(2025, 12, 1)
+
+
+def test_month_year_only_abbrev():
+    assert parse("Dec 2025") == date(2025, 12, 1)
+
+
+def test_month_year_only_january():
+    assert parse("January 2026") == date(2026, 1, 1)
+
+
+# --- day + month only (year taken from today) ---
+
+
+def test_day_month_no_year_ordinal():
+    assert parse("December 1st", today=date(2026, 5, 13)) == date(2026, 12, 1)
+
+
+def test_day_month_no_year_the_of():
+    assert parse("the 15th of March", today=date(2026, 5, 13)) == date(2026, 3, 15)
+
+
+def test_day_month_no_year_word_ordinal():
+    assert parse("March fifteenth", today=date(2026, 5, 13)) == date(2026, 3, 15)
+
+
+# --- European DD/MM/YYYY (day > 12 → unambiguous) ---
+
+
+def test_european_slash_dd_mm_yyyy():
+    assert parse("26/11/2025") == date(2025, 11, 26)
+
+
+# --- dot-separated numeric formats ---
+
+
+def test_dot_iso_yyyy_mm_dd():
+    assert parse("2025.11.26") == date(2025, 11, 26)
+
+
+def test_dot_us_mm_dd_yyyy():
+    assert parse("11.26.2025") == date(2025, 11, 26)
+
+
+def test_dot_european_dd_mm_yyyy():
+    assert parse("26.11.2025") == date(2025, 11, 26)
+
+
+# --- next / last week / month / year ---
+
+
+def test_next_month():
+    assert parse("next month", today=date(2026, 5, 13)) == date(2026, 6, 13)
+
+
+def test_last_month():
+    assert parse("last month", today=date(2026, 5, 13)) == date(2026, 4, 13)
+
+
+def test_next_year():
+    assert parse("next year", today=date(2026, 5, 13)) == date(2027, 5, 13)
+
+
+def test_last_year():
+    assert parse("last year", today=date(2026, 5, 13)) == date(2025, 5, 13)
+
+
+def test_next_week():
+    assert parse("next week", today=date(2026, 5, 13)) == date(2026, 5, 20)
+
+
+def test_last_week():
+    assert parse("last week", today=date(2026, 5, 13)) == date(2026, 5, 6)
+
+
+# --- multi-step relative expressions ---
+
+
+def test_day_after_tomorrow():
+    assert parse("the day after tomorrow", today=date(2026, 5, 13)) == date(2026, 5, 15)
+
+
+def test_day_before_yesterday():
+    assert parse("the day before yesterday", today=date(2026, 5, 13)) == date(
+        2026, 5, 11
+    )
+
+
+def test_week_before_last():
+    assert parse("the week before last", today=date(2026, 5, 13)) == date(2026, 4, 29)
+
+
+# --- a unit from <anchor> ---
+
+
+def test_a_week_from_today():
+    assert parse("a week from today", today=date(2026, 5, 13)) == date(2026, 5, 20)
+
+
+def test_a_month_from_yesterday():
+    assert parse("a month from yesterday", today=date(2026, 5, 13)) == date(2026, 6, 12)
+
+
+def test_a_day_from_tomorrow():
+    assert parse("a day from tomorrow", today=date(2026, 5, 13)) == date(2026, 5, 15)
