@@ -155,6 +155,28 @@ def _parse_explicit_date(s: str) -> date:
     raise ValueError(f"Cannot parse explicit date: {s!r}")
 
 
+def _parse_numeric_date(s: str) -> date:
+    # YYYY[-/]MM[-/]DD
+    m = re.fullmatch(r"(\d{4})[-/](\d{1,2})[-/](\d{1,2})", s)
+    if m:
+        return date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+    # MM[-/]DD[-/]YYYY  (first > 12 → DD/MM/YYYY)
+    m = re.fullmatch(r"(\d{1,2})[-/](\d{1,2})[-/](\d{4})", s)
+    if m:
+        a, b, year = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        return date(year, b, a) if a > 12 else date(year, a, b)
+    # YYYY.MM.DD
+    m = re.fullmatch(r"(\d{4})\.(\d{1,2})\.(\d{1,2})", s)
+    if m:
+        return date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+    # DD.MM.YYYY or MM.DD.YYYY  (first > 12 → European DD.MM)
+    m = re.fullmatch(r"(\d{1,2})\.(\d{1,2})\.(\d{4})", s)
+    if m:
+        a, b, year = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        return date(year, b, a) if a > 12 else date(year, a, b)
+    raise ValueError(f"Cannot parse numeric date: {s!r}")
+
+
 def _resolve_anchor(s: str, today: date) -> date:
     if s == "today":
         return today
@@ -162,7 +184,11 @@ def _resolve_anchor(s: str, today: date) -> date:
         return today - timedelta(days=1)
     if s == "tomorrow":
         return today + timedelta(days=1)
-    return _parse_explicit_date(s)
+    try:
+        return _parse_explicit_date(s)
+    except ValueError:
+        pass
+    return _parse_numeric_date(s)
 
 
 def parse(s: str, today: date | None = None) -> date:
@@ -301,26 +327,10 @@ def parse(s: str, today: date | None = None) -> date:
     if m and m.group(1) in MONTHS:
         return date(int(m.group(2)), MONTHS[m.group(1)], 1)
 
-    # --- YYYY[-/]MM[-/]DD  (ISO 8601 and slash variant) ---
-    m = re.fullmatch(r"(\d{4})[-/](\d{1,2})[-/](\d{1,2})", t)
-    if m:
-        return date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
-
-    # --- MM[-/]DD[-/]YYYY  (US default); if first part > 12 treat as DD/MM/YYYY ---
-    m = re.fullmatch(r"(\d{1,2})[-/](\d{1,2})[-/](\d{4})", t)
-    if m:
-        a, b, year = int(m.group(1)), int(m.group(2)), int(m.group(3))
-        return date(year, b, a) if a > 12 else date(year, a, b)
-
-    # --- YYYY.MM.DD ---
-    m = re.fullmatch(r"(\d{4})\.(\d{1,2})\.(\d{1,2})", t)
-    if m:
-        return date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
-
-    # --- DD.MM.YYYY or MM.DD.YYYY (first > 12 → European DD.MM) ---
-    m = re.fullmatch(r"(\d{1,2})\.(\d{1,2})\.(\d{4})", t)
-    if m:
-        a, b, year = int(m.group(1)), int(m.group(2)), int(m.group(3))
-        return date(year, b, a) if a > 12 else date(year, a, b)
+    # --- numeric formats (all variants) ---
+    try:
+        return _parse_numeric_date(t)
+    except ValueError:
+        pass
 
     raise ValueError(f"Cannot parse date string: {s!r}")

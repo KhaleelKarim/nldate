@@ -510,3 +510,34 @@ def test_a_month_from_yesterday():
 
 def test_a_day_from_tomorrow():
     assert parse("a day from tomorrow", today=date(2026, 5, 13)) == date(2026, 5, 15)
+
+
+# --- numeric dates as anchors in delta expressions ---
+
+
+def test_delta_with_iso_dash_anchor():
+    assert parse("2 weeks after 2025-12-04") == date(2025, 12, 18)
+
+
+def test_delta_with_iso_slash_anchor():
+    assert parse("3 days before 2025/11/26") == date(2025, 11, 23)
+
+
+def test_delta_with_us_slash_anchor():
+    assert parse("1 month after 11/26/2025") == date(2025, 12, 26)
+
+
+def test_delta_with_dot_iso_anchor():
+    assert parse("5 days before 2025.11.26") == date(2025, 11, 21)
+
+
+def test_delta_with_dot_european_anchor():
+    assert parse("5 days before 26.11.2025") == date(2025, 11, 21)
+
+
+def test_combined_delta_with_iso_anchor():
+    assert parse("1 year and 2 months after 2024-07-04") == date(2025, 9, 4)
+
+
+def test_delta_with_us_leading_zeros_anchor():
+    assert parse("10 days after 01/05/2025") == date(2025, 1, 15)
