@@ -132,4 +132,14 @@ def parse(s: str, today: date | None = None) -> date:
         sign = 1 if direction == "after" else -1
         return _apply_delta(anchor, parts, sign)
 
+    # YYYY[-/]MM[-/]DD  (ISO 8601 and its slash variant)
+    m = re.fullmatch(r"(\d{4})[-/](\d{1,2})[-/](\d{1,2})", t)
+    if m:
+        return date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+
+    # MM[-/]DD[-/]YYYY  (US month-first with slashes or dashes)
+    m = re.fullmatch(r"(\d{1,2})[-/](\d{1,2})[-/](\d{4})", t)
+    if m:
+        return date(int(m.group(3)), int(m.group(1)), int(m.group(2)))
+
     raise ValueError(f"Cannot parse date string: {s!r}")

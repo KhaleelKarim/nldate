@@ -190,3 +190,46 @@ def test_mixed_caps_combined_delta_after_yesterday_with_today():
     assert parse(
         "1 YEAR and 2 months After Yesterday", today=date(2026, 5, 13)
     ) == date(2027, 7, 12)
+
+
+# --- numerical date formats ---
+
+
+def test_numeric_iso_dash():
+    assert parse("2025-11-26") == date(2025, 11, 26)
+
+
+def test_numeric_iso_dash_leading_zeros():
+    assert parse("2025-01-05") == date(2025, 1, 5)
+
+
+def test_numeric_iso_dash_no_leading_zeros():
+    assert parse("2025-1-5") == date(2025, 1, 5)
+
+
+def test_numeric_iso_slash():
+    assert parse("2025/11/26") == date(2025, 11, 26)
+
+
+def test_numeric_iso_slash_leading_zeros():
+    assert parse("2025/01/05") == date(2025, 1, 5)
+
+
+def test_numeric_us_slash():
+    assert parse("11/26/2025") == date(2025, 11, 26)
+
+
+def test_numeric_us_slash_leading_zeros():
+    assert parse("01/05/2025") == date(2025, 1, 5)
+
+
+def test_numeric_us_slash_no_leading_zeros():
+    assert parse("1/5/2025") == date(2025, 1, 5)
+
+
+def test_numeric_us_dash():
+    assert parse("11-26-2025") == date(2025, 11, 26)
+
+
+def test_numeric_us_dash_no_leading_zeros():
+    assert parse("1-5-2025") == date(2025, 1, 5)
