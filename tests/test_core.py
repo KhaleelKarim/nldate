@@ -286,3 +286,46 @@ def test_year_the_numeric_ordinal_of_month():
 
 def test_year_the_word_ordinal_of_month_high():
     assert parse("2023, the thirty-first of January") == date(2023, 1, 31)
+
+
+# --- abbreviated month names ---
+
+
+def test_abbrev_month_no_ordinal():
+    assert parse("Dec 1, 2025") == date(2025, 12, 1)
+
+
+def test_abbrev_month_with_ordinal_suffix():
+    assert parse("Dec 1st, 2025") == date(2025, 12, 1)
+
+
+def test_abbrev_month_word_ordinal():
+    assert parse("Dec first, 2025") == date(2025, 12, 1)
+
+
+def test_abbrev_month_jan():
+    assert parse("Jan 5, 2026") == date(2026, 1, 5)
+
+
+def test_abbrev_month_feb():
+    assert parse("Feb 28, 2024") == date(2024, 2, 28)
+
+
+def test_abbrev_month_sep():
+    assert parse("Sep 15, 2023") == date(2023, 9, 15)
+
+
+def test_abbrev_month_sept():
+    assert parse("Sept 15, 2023") == date(2023, 9, 15)
+
+
+def test_abbrev_month_oct():
+    assert parse("Oct 31, 2025") == date(2025, 10, 31)
+
+
+def test_abbrev_the_ordinal_of_abbrev_month():
+    assert parse("the 1st of Dec, 2025") == date(2025, 12, 1)
+
+
+def test_abbrev_in_delta_expression():
+    assert parse("5 days before Dec 1st, 2025") == date(2025, 11, 26)
